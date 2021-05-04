@@ -30,24 +30,16 @@
 
 ### Crie o arquivo Docker Compose
 
-```sh
-docker network create pfa-network
-```
 
-## :pushpin: Rodando o Docker 
+
+## :pushpin: Rodando o Docker Composer
 
 
 ```sh
-docker run --rm -d --network pfa-network --name pfa-mysql desiderios/pfa-mysql
+docker-compose up
 ```
 
-```sh
-docker run --rm -d --network pfa-network --name pfa-node desiderios/pfa-node
-```
 
-```sh
-docker run --rm -d --network pfa-network -p 8080:80 --name pfa-nginx desiderios/pfa-nginx
-```
 
 Access http://localhost:8080/
 
