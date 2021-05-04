@@ -1,0 +1,54 @@
+version: "3"
+
+services:
+    pfa-mysql:
+        image: mysql:latest
+        environment:
+            - MYSQL_DATABASE=fullcycle
+            - MYSQL_ROOT_PASSWORD=root
+            - LANG=C.UTF-8
+        volumes:
+            - ./mysql/dbdata:/var/lib/mysql
+            - ./mysql/sql-scripts/:/docker-entrypoint-initdb.d/
+        networks:
+            - mysqlnetwork
+        ports:
+            - 3306
+        restart:
+            on-failure:2
+
+    pfa-node:
+        build: ./node
+        volumes:
+            - ./node:/usr/src/app
+            - /usr/src/app/node_modules
+        depends_on:
+            - pfa-mysql
+        entrypoint: [sh, -c, "echo 'waiting 20 seconds to initialize' && sleep 20 && dockerize -wait tcp://pfa-mysql:3306 -timeout 5s node index.js" ]
+        
+        networks:
+            - mysqlnetwork
+            - mynetwork
+        ports:
+            - 3000
+        restart: 
+            on-failure:2
+
+    pfa-nginx:
+        build: 
+            ./nginx        
+        ports:
+            - 8000:80
+        depends_on:
+            - pfa-node
+            - pfa-mysql
+        networks:
+            - mynetwork
+        restart: 
+            on-failure:2
+
+networks:
+    mysqlnetwork:
+        driver: bridge
+    mynetwork:
+        driver: bridge
