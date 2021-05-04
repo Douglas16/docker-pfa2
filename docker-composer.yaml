@@ -1,0 +1,41 @@
+version: "3"
+
+services:
+    pfa-mysql:
+        image: mysql:8.0.24
+        environment:
+            - MYSQL_DATABASE=fullcycle
+            - MYSQL_ROOT_PASSWORD=root
+            - LANG=C.UTF-8
+        volumes:
+            - ./mysql/dbdata:/var/lib/mysql
+            - ./mysql/sql-scripts/:/docker-entrypoint-initdb.d/
+        networks:
+            - mysqlnetwork
+
+    pfa-node:
+        build: ./node
+        volumes:
+            - ./node:/usr/src/app
+            - /usr/src/app/node_modules
+        depends_on:
+            - pfa-mysql
+        entrypoint: dockerize -wait tcp://pfa-docker-c2-mysql:3306 -timeout 300s -wait-retry-interval 5s
+        
+        networks:
+            - mysqlnetwork
+            - mynetwork
+
+    pfa-nginx:
+        build: ./nginx
+        restart: always
+        ports:
+            - 8000:80
+        depends_on:
+            - pfa-node
+        networks:
+            - mynetwork
+
+networks:
+    mysqlnetwork:
+    mynetwork:
